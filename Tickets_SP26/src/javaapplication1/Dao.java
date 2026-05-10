@@ -151,23 +151,31 @@ public class Dao {
 			statement = getConnection().createStatement();
 			//starts the creation of string used for updating the ticket
 			String updateString;
+			//used for making sure commas are added if needed
+			boolean check = false;
 			//checks for a new description for the ticket
 			if (newDes == null || newDes.equals("")) {
 				updateString = "UPDATE apear_tickets SET ";
 			} else {
-				updateString = "UPDATE apear_tickets SET ticket_description = '" + newDes + "', ";
+				updateString = "UPDATE apear_tickets SET ticket_description = '" + newDes + "'";
+				check = true;
 			}
 			//checks for a new status for the ticket
 			if (newStatus == null || newStatus.equals("")) {
 				updateString += "";
+			} else if(check) {
+				updateString += ", status = '" + newStatus + "'";
 			} else {
-				updateString += "status = '" + newStatus + "', ";
+				updateString += "status = '" + newStatus + "'";
+				check = true;
 			}
 			//finally checks if the ticket has been closed
-			if (isClosed) {
+			if (isClosed && check) {
+				statement.executeUpdate(updateString + ", end_date = now() WHERE ticket_id = " + id);
+			} else if (isClosed) {
 				statement.executeUpdate(updateString + "end_date = now() WHERE ticket_id = " + id);
-			} else {
-				statement.executeUpdate(updateString + "WHERE ticket_id = " + id);
+			} else if (check) {
+				statement.executeUpdate(updateString + " WHERE ticket_id = " + id);
 			}
 		} catch (SQLException e) {
 			//handles the exceptions
